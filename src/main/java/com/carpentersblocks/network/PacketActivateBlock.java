@@ -1,48 +1,64 @@
 package com.carpentersblocks.network;
 
-import java.io.IOException;
+import com.carpentersblocks.block.BlockCoverable;
+import com.carpentersblocks.util.BlockProperties;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import com.carpentersblocks.util.EntityLivingUtil;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
+import net.minecraft.world.World;
 
-public class PacketActivateBlock extends TilePacket {
+import java.io.IOException;
 
-    private int side;
+public class PacketActivateBlock extends TilePacket
+{
 
-    public PacketActivateBlock() {}
+	private int side;
 
-    public PacketActivateBlock(int x, int y, int z, int side)
-    {
-        super(x, y, z);
-        this.side = side;
-    }
+	public PacketActivateBlock()
+	{
+	}
 
-    @Override
-    public void processData(EntityPlayer entityPlayer, ByteBufInputStream bbis) throws IOException
-    {
-        super.processData(entityPlayer, bbis);
+	public PacketActivateBlock(int x, int y, int z, int side)
+	{
+		super(x, y, z);
+		this.side = side;
+	}
 
-        ItemStack itemStack = entityPlayer.getHeldItem();
-        side = bbis.readInt();
+	@Override
+	public void processData(EntityPlayer player, ByteBufInputStream bbis) throws IOException
+	{
+		super.processData(player, bbis);
 
-        boolean result = entityPlayer.worldObj.getBlock(x, y, z).onBlockActivated(entityPlayer.worldObj, x, y, z, entityPlayer, side, 1.0F, 1.0F, 1.0F);
+		this.side = bbis.readInt();
+		World world = player.worldObj;
+		int x = this.x;
+		int y = this.y;
+		int z = this.z;
+		ItemStack heldItem = player.getHeldItem();
 
-        if (!result) {
-            if (itemStack != null && itemStack.getItem() instanceof ItemBlock) {
-                itemStack.tryPlaceItemIntoWorld(entityPlayer, entityPlayer.worldObj, x, y, z, side, 1.0F, 1.0F, 1.0F);
-                EntityLivingUtil.decrementCurrentSlot(entityPlayer);
-            }
-        }
-    }
+		if (heldItem != null && heldItem.getItem() instanceof ItemBlock && !BlockProperties.isOverlay(heldItem))
+			return;
+		if (player.getDistanceSq(x, y, z) > 64)
+			return;
+		if (!world.blockExists(x, y, z))
+			return;
 
-    @Override
-    public void appendData(ByteBuf buffer) throws IOException
-    {
-        super.appendData(buffer);
-        buffer.writeInt(side);
-    }
+		Block block = world.getBlock(x, y, z);
+
+		if (!(block instanceof BlockCoverable))
+			return;
+
+		block.onBlockActivated(world, x, y, z, player, this.side, 1.0F, 1.0F, 1.0F);
+	}
+
+	@Override
+	public void appendData(ByteBuf buffer) throws IOException
+	{
+		super.appendData(buffer);
+		buffer.writeInt(this.side);
+	}
 
 }
