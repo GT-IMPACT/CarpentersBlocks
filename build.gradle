@@ -29,7 +29,7 @@ apply plugin: 'forge'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-version = "3.3.8.1"
+version = "3.3.8.2"
 group= "com.carpentersblocks"
 archivesBaseName = "Carpenters-Blocks"
 
@@ -46,10 +46,10 @@ minecraft {
 }
 
 dependencies {
-	compile name: archivesBaseName + '-' + version + '-dev'
+	compile name: archivesBaseName + '-3.3.8.1-dev'
 }
 
 jar {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	from zipTree('lib/' + archivesBaseName + '-' + version + '.jar')
+	from zipTree('lib/' + archivesBaseName + '-3.3.8.1.jar')
 }
