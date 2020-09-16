@@ -29,7 +29,7 @@ apply plugin: 'forge'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-version = "3.3.8.2"
+version = "3.3.8.2-impact"
 group= "com.carpentersblocks"
 archivesBaseName = "Carpenters-Blocks"
 
